@@ -34,6 +34,16 @@ function union(groups, a, b) {
     groups[gb] = ga;
 }
 
+function isOneGroup(input, groups) {
+    const count = {};
+    for (let box of input) {
+        const group = find(groups, hash(box));
+        if (!(group in count)) count[group] = 0; 
+        count[group] += 1;
+    }
+    return Object.keys(count).length === 1;
+}
+
 function sol(input) {
 
     getDistance(
@@ -46,8 +56,6 @@ function sol(input) {
         [52,470,668]
     );
 
-    
-
     input = input.split("\n").map(row => row.split(",").map(n => parseInt(n, 10)));
     let pairs = [];
     for (let i = 0; i < input.length; i++) {
@@ -58,36 +66,24 @@ function sol(input) {
     }
     pairs = pairs.sort((a, b) => a.dist - b.dist);
     
-    //console.log(pairs.map(obj => JSON.stringify(obj)))
-
-    // Init groups
     const groups = {};
     for (let box of input) {
         const h = hash(box);
         groups[h] = h;
     }
 
-    const limit = (pairs.length > 1000) ? 1000 : 10;
-
-    for (let i = 0; i < limit; i++) {
-        const {dist, boxes} = pairs[i];
+    let lastTwo = null;
+    let index = 0;
+    while(!isOneGroup(input, groups)) {
+        const { boxes } = pairs[index];
+        index += 1;
         const b1 = hash(boxes[0]);
         const b2 = hash(boxes[1]);
-        union(groups, b1, b2);   
+        union(groups, b1, b2);
+        lastTwo = [boxes[0], boxes[1]];
     }
 
-    const count = {};
-    for (let box of input) {
-        const group = find(groups, hash(box));
-        if (!(group in count)) count[group] = 0; 
-        count[group] += 1;
-    }
-
-    const groupSizes = Object.values(count).sort((a, b) => b - a);
-
-    //console.log(groupSizes)
-
-    return groupSizes[0] * groupSizes[1] * groupSizes[2];
+    return lastTwo[0][0] * lastTwo[1][0];
 }
 
 function main() {
